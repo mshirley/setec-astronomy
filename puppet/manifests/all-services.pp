@@ -7,15 +7,17 @@ package { $basepkgs : ensure => "installed" }
 # stop and disable 
 service { [ "tor", "ejabberd", "openvpn", "bind9" ] : 
   ensure => "stopped",
-  enable => "false"
+  enable => "false",
+  require => Package[$basepkgs]
 }
 
 # download and install ejabberd.cfg
 exec { "dl_ejabberd_cfg":
-  command => "wget #{$s3_base_url}/conf/ejabberd/ejabberd.cfg -O /tmp/ejabberd.cfg",
+  command => "wget $s3_base_url/conf/ejabberd/ejabberd.cfg -O /tmp/ejabberd.cfg",
   cwd     => "/tmp/",
   creates => "/tmp/ejabberd.cfg",
-  path    => ["/usr/bin", "/usr/sbin"]
+  path    => ["/usr/bin", "/usr/sbin"],
+  require => Package["ejabberd"]
 }
 
 file { "/etc/ejabberd/ejabberd.cfg":
