@@ -39,23 +39,25 @@
 		"KeyName" : { "Ref" : "KeyName" },
 		"ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
 		"UserData" : { "Fn::Base64" : { "Fn::Join" : ["",[
-            "#!/bin/bash -ex","\n",
-            "yum -y install gcc-c++ make puppet links squid bind-chroot openvpn rubygems","\n",
-			"wget -P /tmp https://s3.amazonaws.com/setec-astronomy-s3/installers/ejabberd-2.1.11-linux-x86_64-installer.run.gz","\n",
-			"gzip -d /tmp/ejabberd-2.1.11-linux-x86_64-installer.run.gz","\n",
+      "#!/bin/bash -ex","\n",
+      "yum -y install gcc-c++ make puppet links squid bind-chroot openvpn rubygems","\n",
+      "wget https://github.com/mshirley/setec-astronomy/zipball/master -O /tmp/setec-astronomy.zip","\n",
+      "unzip /tmp/setec-astronomy.zip -d /tmp","\n",
+      "mv /tmp/mshirley-setec-* /tmp/setec-astronomy","\n",
+      "wget -P /tmp https://s3.amazonaws.com/setec-astronomy-s3/installers/ejabberd-2.1.11-linux-x86_64-installer.run.gz","\n",
+      "gzip -d /tmp/ejabberd-2.1.11-linux-x86_64-installer.run.gz","\n",
 			"chmod u+x /tmp/ejabberd-2.1.11-linux-x86_64-installer.run","\n",
 			"/tmp/ejabberd-2.1.11-linux-x86_64-installer.run --mode unattended --adminpw password","\n",
-			"echo -e ' setec-astronomy' >> /etc/hosts","\n",
+			"echo -ne ' setec-astronomy' >> /etc/hosts","\n",
 			"openvpn --genkey --secret /etc/openvpn/static.key","\n",
 			"cp /etc/openvpn/static.key /home/ec2-user/","\n",
 			"chown ec2-user /home/ec2-user/static.key","\n",
-			"wget -P /etc/openvpn/ https://s3.amazonaws.com/setec-astronomy-s3/src/setec-astronomy/conf/openvpn/server.conf","\n",
-			"gem install sinatra","\n"
-      "wget -P /tmp/ https://s3.amazonaws.com/setec-astronomy-s3/src/setec-astronomy/conf/openvpn/easy-rsa-new.zip","\n",
-      "unzip -d /tmp/ /tmp/easy-rsa-new.zip","\n",
-      "cd /tmp/easy-rsa-new","\n",
-      "sh /tmp/easy-rsa-new/doit2.sh","\n"
-		]]}}
+			"cp /tmp/setec-astronomy/conf/openvpn/server-pki.conf /etc/openvpn/","\n",
+      "gem install sinatra","\n",
+      "cd /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/","\n",
+      "sh /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/doit2.sh","\n",
+      "nohup ruby /tmp/setec-astronomy/controller/controller.rb -p 1234 >/dev/null &"
+      ]]}}
       }
     },
 
