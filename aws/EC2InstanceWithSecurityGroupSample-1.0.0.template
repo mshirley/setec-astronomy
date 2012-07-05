@@ -51,6 +51,10 @@
 			"chown ec2-user /home/ec2-user/static.key","\n",
 			"wget -P /etc/openvpn/ https://s3.amazonaws.com/setec-astronomy-s3/src/setec-astronomy/conf/openvpn/server.conf","\n",
 			"gem install sinatra","\n"
+      "wget -P /tmp/ https://s3.amazonaws.com/setec-astronomy-s3/src/setec-astronomy/conf/openvpn/easy-rsa-new.zip","\n",
+      "unzip -d /tmp/ /tmp/easy-rsa-new.zip","\n",
+      "cd /tmp/easy-rsa-new","\n",
+      "sh /tmp/easy-rsa-new/doit2.sh","\n"
 		]]}}
       }
     },

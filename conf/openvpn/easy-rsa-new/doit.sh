@@ -6,4 +6,5 @@ export KEY_NAME='CA'
 export KEY_NAME='SERVER'
 ./build-key-server server
 export KEY_NAME='CLIENT1'
-./build-key clien1
+./build-key client1
+./build-dh

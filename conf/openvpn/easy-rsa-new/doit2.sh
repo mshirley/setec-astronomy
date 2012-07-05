@@ -50,3 +50,10 @@ export KEY_NAME='CLIENT1'
 #export EASY_RSA="${EASY_RSA:-.}"
 "$EASY_RSA/pkitool" client1
 
+# create dh
+if [ -d $KEY_DIR ] && [ $KEY_SIZE ]; then
+    $OPENSSL dhparam -out ${KEY_DIR}/dh${KEY_SIZE}.pem ${KEY_SIZE}
+else
+    echo 'Please source the vars script first (i.e. "source ./vars")'
+    echo 'Make sure you have edited it to reflect your configuration.'
+fi
