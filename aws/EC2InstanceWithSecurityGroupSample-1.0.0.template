@@ -64,17 +64,22 @@
     "CFormSecGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        "GroupDescription" : "Enable SSH and Openvpn",
+        "GroupDescription" : "Enable SSH, Openvpn, and controller.rb",
         "SecurityGroupIngress" : [ {
           "IpProtocol" : "tcp",
           "FromPort" : "22",
           "ToPort" : "22",
-          "CidrIp" : "0.0.0.0/0"
-        }, {
+          "CidrIp" : "0.0.0.0/0" }, 
+      {
 		  "IpProtocol" : "udp",
 		  "FromPort" : "1194",
 		  "ToPort" : "1194",
-		  "CidrIp" : "0.0.0.0/0" } ]
+		  "CidrIp" : "0.0.0.0/0" }, 
+      {
+      "IpProtocol" : "tcp",
+      "FromPort" : "1234",
+      "ToPort" : "1234",
+      "CidrIp" : "0.0.0.0/0" } ]
       }
     }
   },
