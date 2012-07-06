@@ -47,6 +47,14 @@ def vpn_service(action)
     "<a href='/vpn/get-ca'>ca.crt</a><p>
     <a href='/vpn/get-client-crt'>client.crt</a><p>
     <a href='/vpn/get-client-key'>client.key</a><p>"
+  when "status"
+    vpnout = `/etc/init.d/openvpn status`
+    if vpnout.include?("written")
+      vpnstatus = "running"
+    else
+      vpnstatus = "not running"
+    end
+    return vpnstatus
   else
     "bad action"
   end
@@ -62,6 +70,13 @@ def ejabberd_service(action)
     "stopped"
   when "restart"
     "restart for ejabberd not supported, stop then start"
+  when "status"
+    ejabberdout = `/opt/ejabberd-2.1.11/bin/status`
+    if ejabberdout.include?("started")
+      ejabberdstatus = "running"
+    else
+      ejabberdstatus = "not running"
+    end     
   else
     "bad action"
   end
@@ -78,6 +93,13 @@ def bind_service(action)
   when "restart"
     `/etc/init.d/named restart`
     "restarted"
+  when "status"
+    bindout = `/etc/init.d/named status`
+    if bindout.include?("running")
+      bindstatus = "running"
+    else
+      bindstatus = "not running"
+    end
   else
     "bad action"
   end
@@ -94,6 +116,13 @@ def squid_service(action)
   when "restart"
     `/etc/init.d/squid restart`
     "restarted"
+  when "status"
+    squidout = `/etc/init.d/squid status`
+    if squidout.include?("running")
+      squidstatus = "running"
+    else
+      squidstatus = "not running"
+    end
   else
     "bad action"
   end
@@ -104,11 +133,12 @@ get '/' do
 end
 
 get '/services' do
-  "all services: <a href='/services/all/start'>start</a> -- <a href='/services/all/stop'>stop</a> -- <a href='/services/all/restart'>restart</a><p>
-  vpn: <a href='/services/vpn/start'>start</a> -- <a href='/services/vpn/stop'>stop</a> -- <a href='/services/vpn/restart'>restart</a> -- <a href='/services/vpn/data'>get data</a><p>
-  ejabberd: <a href='/services/ejabberd/start'>start</a> -- <a href='/services/ejabberd/stop'>stop</a> -- <a href='/services/ejabberd/restart'>restart</a><p>
-  bind: <a href='/services/bind/start'>start</a> -- <a href='/services/bind/stop'>stop</a> -- <a href='/services/bind/restart'>restart</a><p>
-  squid: <a href='/services/squid/start'>start</a> -- <a href='/services/squid/stop'>stop</a> -- <a href='/services/squid/restart'>restart</a>
+  "*NOTE* vpn service should be running before starting the other services<p>
+  all services: <a href='/services/all/start'>start</a> -- <a href='/services/all/stop'>stop</a> -- <a href='/services/all/restart'>restart</a><p>
+  vpn: status = #{vpn_service("status")} || <a href='/services/vpn/start'>start</a> -- <a href='/services/vpn/stop'>stop</a> -- <a href='/services/vpn/restart'>restart</a> -- <a href='/services/vpn/data'>get data</a><p>
+  ejabberd: status = #{ejabberd_service("status")} || <a href='/services/ejabberd/start'>start</a> -- <a href='/services/ejabberd/stop'>stop</a> -- <a href='/services/ejabberd/restart'>restart</a><p>
+  bind: status = #{bind_service("status")} || <a href='/services/bind/start'>start</a> -- <a href='/services/bind/stop'>stop</a> -- <a href='/services/bind/restart'>restart</a><p>
+  squid: status = #{squid_service("status")} || <a href='/services/squid/start'>start</a> -- <a href='/services/squid/stop'>stop</a> -- <a href='/services/squid/restart'>restart</a>
   "
 end
 
@@ -146,15 +176,15 @@ get '/services/vpn/data' do
 end
 
 get '/vpn/get-ca' do
-  send_file '/tmp/easy-rsa-new/keys/ca.crt', :filename => 'ca.crt'
+  send_file '/tmp/setec-astronomy/conf/openvpn/easy-rsa-new/keys/ca.crt', :filename => 'ca.crt'
 end
 
 get '/vpn/get-client-crt' do
-  send_file '/tmp/easy-rsa-new/keys/client1.crt', :filename => 'client1.crt'
+  send_file '/tmp/setec-astronomy/conf/openvpn/easy-rsa-new/keys/client1.crt', :filename => 'client1.crt'
 end
 
 get '/vpn/get-client-key' do
-  send_file '/tmp/easy-rsa-new/keys/client1.key', :filename => 'client1.key'
+  send_file '/tmp/setec-astronomy/conf/openvpn/easy-rsa-new/keys/client1.key', :filename => 'client1.key'
 end
 
 
