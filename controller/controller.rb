@@ -13,10 +13,20 @@ def all_services(action)
   case action
   when "start"
     vpn_service("start")
+    ejabberd_service("start")
+    bind_service("start")
+    squid_service("start")
   when "stop"
     vpn_service("stop")
+    ejabberd_service("stop")
+    bind_service("stop")
+    squid_service("stop")
   when "restart"
     vpn_service("restart")
+    ejabberd_service("stop")
+    ejabberd_service("start")
+    bind_service("restart")
+    squid_service("restart")
   else
     "bad action"
   end
@@ -45,10 +55,10 @@ end
 def ejabberd_service(action)
   case action
   when "start"
-    `/opt/ejabberd-2.1.11/bin/start`
+    `/opt/ejabberd-2.1.11/bin/start &`
     "started"
   when "stop"
-    `/opt/ejabberd-2.1.11/bin/stop`
+    `/opt/ejabberd-2.1.11/bin/stop &`
     "stopped"
   when "restart"
     "restart for ejabberd not supported, stop then start"
@@ -153,7 +163,7 @@ get '/cleanup' do
 end
 
 get '/die' do
-  pid = `ps a | grep controller.rb | grep -v grep | cut -d" " -f 1`
+  pid = `ps ax | grep controller.rb | grep -v grep | cut -d" " -f 2`
   `kill #{pid}`
 end
 
