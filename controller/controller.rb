@@ -70,13 +70,13 @@ end
 def bind_service(action)
   case action
   when "start"
-    `/etc/init.d/bind start`
+    `/etc/init.d/named start`
     "started"
   when "stop"
-    `/etc/init.d/bind stop`
+    `/etc/init.d/named stop`
     "stopped"
   when "restart"
-    `/etc/init.d/bind restart`
+    `/etc/init.d/named restart`
     "restarted"
   else
     "bad action"
