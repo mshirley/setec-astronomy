@@ -56,7 +56,7 @@
       "gem install sinatra","\n",
       "cd /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/","\n",
       "sh /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/doit2.sh","\n",
-      "nohup ruby /tmp/setec-astronomy/controller/controller.rb -p 1234 >/dev/null &"
+      "nohup ruby /tmp/setec-astronomy/controller/controller.rb -p 1234 >/dev/null &","\n"
       ]]}}
       }
     },
