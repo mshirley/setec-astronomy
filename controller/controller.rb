@@ -63,15 +63,15 @@ end
 def ejabberd_service(action)
   case action
   when "start"
-    `/opt/ejabberd-2.1.11/bin/start &`
+    `/opt/ejabberd-2.1.11/bin/ejabberctl start &`
     "started"
   when "stop"
-    `/opt/ejabberd-2.1.11/bin/stop &`
+    `/opt/ejabberd-2.1.11/bin/ejabberctl stop &`
     "stopped"
   when "restart"
     "restart for ejabberd not supported, stop then start"
   when "status"
-    ejabberdout = `/opt/ejabberd-2.1.11/bin/status`
+    ejabberdout = `/opt/ejabberd-2.1.11/bin/ejabberctl status`
     if ejabberdout.include?("started")
       ejabberdstatus = "running"
     else
