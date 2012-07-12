@@ -64,8 +64,7 @@
       "cd /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/","\n",
       "sh /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/doit2.sh","\n",
       "# start the web ui service","\n",
-      "nohup ruby /tmp/setec-astronomy/controller/controller.rb -p 1234 >/dev/null &","\n",
-      "curl http://freedns.afraid.org/dynamic/update.php?VDFQNks2MzFVMVVBQUVoY0o1azo3ODAzMTMw","\n"
+      "nohup ruby /tmp/setec-astronomy/controller/controller.rb -p 1234 >/dev/null &","\n"
       ]]}}
       }
     },
