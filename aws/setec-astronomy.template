@@ -16,16 +16,22 @@
           "AMI" : "ami-aecd60c7"
       },
       "us-west-1" : {
-          "AMI" : "ami-655a0a20"
+          "AMI" : "ami-734c6936"
+      },
+      "us-west-2" : {
+          "AMI" : "ami-48da5578"
       },
       "eu-west-1" : {
-          "AMI" : "ami-7fd4e10b"
+          "AMI" : "ami-6d555119"
+      },
+      "sa-east-1" : {
+          "AMI" : "ami-fe36e8e3"
       },
       "ap-southeast-1" : {
-          "AMI" : "ami-72621c20"
+          "AMI" : "ami-3c0b4a6e"
       },
       "ap-northeast-1" : {
-          "AMI" : "ami-8e08a38f"
+          "AMI" : "ami-2819aa29"
       }
     }
   },
@@ -48,17 +54,11 @@
       "unzip /tmp/setec-astronomy.zip -d /tmp","\n",
       "mv /tmp/mshirley-setec-* /tmp/setec-astronomy","\n",
       "cp /tmp/setec-astronomy/conf/named/named.* /etc/","\n",
-      "# pull down ejabberd and install","\n",
-      "wget -P /tmp https://s3.amazonaws.com/setec-astronomy-s3/installers/ejabberd-2.1.11-linux-x86_64-installer.run.gz","\n",
-      "gzip -d /tmp/ejabberd-2.1.11-linux-x86_64-installer.run.gz","\n",
-      "chmod u+x /tmp/ejabberd-2.1.11-linux-x86_64-installer.run","\n",
-      "/tmp/ejabberd-2.1.11-linux-x86_64-installer.run --mode unattended --adminpw password","\n",
-      "# add host entry, doesn't work currently","\n",
-      "echo -ne ' setec-astronomy' >> /etc/hosts","\n",
-      "# generate static openvpn key and copy to ec2-user dir","\n",
-      "openvpn --genkey --secret /etc/openvpn/static.key","\n",
-      "cp /etc/openvpn/static.key /home/ec2-user/","\n",
-      "chown ec2-user /home/ec2-user/static.key","\n",
+      "# DISABLED -- pull down ejabberd and install","\n",
+      "# wget -P /tmp https://s3.amazonaws.com/setec-astronomy-s3/installers/ejabberd-2.1.11-linux-x86_64-installer.run.gz","\n",
+      "# gzip -d /tmp/ejabberd-2.1.11-linux-x86_64-installer.run.gz","\n",
+      "# chmod u+x /tmp/ejabberd-2.1.11-linux-x86_64-installer.run","\n",
+      "# /tmp/ejabberd-2.1.11-linux-x86_64-installer.run --mode unattended --adminpw password","\n",
       "# copy openvpn config file and execute script to generate pki","\n",
       "cp /tmp/setec-astronomy/conf/openvpn/server-pki.conf /etc/openvpn/","\n",
       "cd /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/","\n",
