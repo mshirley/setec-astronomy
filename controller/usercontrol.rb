@@ -1,5 +1,23 @@
-tcvolume = "~/Dropbox/newdropbox"
+require 'rubygems'
+require 'aws-sdk'
+
+tcvolume = "#{ENV['HOME']}/Dropbox/newdropbox"
 cfnpath = "/opt/aws-cloudformatino-tools/"
+credfile = "#{ENV['HOME']}/.ec2/creds"
+
+def readcreds(credfile)
+  puts "Reading EC2 credentials file, #{credfile}"
+  if !File.exist?(credfile)
+    puts "EC2 credientials file #{credfile} not found"
+    exit
+  else
+    puts "EC2 credentials file found"
+    creds = File.read(credfile)
+    awsaccesskey = creds.split[0].split('=')[1]
+    awssecretkey = creds.split[1].split('=')[1]
+    return awsaccesskey, awssecretkey
+  end 
+end
 
 def mounttc(tcvolume)
   puts "Mount true crypt volume? (y/n)"
@@ -53,6 +71,7 @@ end
 
 def createstack()
   puts "Would you like to create a new stack? (y/n)"
+  answer = gets.downcase.strip
   if answer == "y"
     result = %x[/opt/aws-cloudformation-tools/bin./cfn-create-stacksetec-astronomy "--template-file ~/src/setec-astronomy/aws/setec-astronomy.template --parameters=KeyName=setec-astronomy"]
   elsif answer == "n"
@@ -84,6 +103,7 @@ def verifystack()
 end
 
 mounttc(tcvolume)
+awsaccesskey, awssecretkey = readcreds(credfile)
 hasstack = check4stack()
 if hasstack
   killstack()
@@ -92,7 +112,8 @@ createstack()
 puts "Waiting 15seconds for stack ip to be populated..."
 sleep 15
 newstackip = verifystack()
-if newstackip.include?("error")
+if newstackip.nil?
+elsif newstackip.include?("error")
   puts "error verifying new instance, #{newstackip}"
 else
   puts "new stack ip is #{newstackip}"
