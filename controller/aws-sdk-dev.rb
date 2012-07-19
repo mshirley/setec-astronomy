@@ -24,9 +24,9 @@ cfm = AWS::CloudFormation.new( :access_key_id => awsaccesskey, :secret_access_ke
 
 #puts cfm.methods.sort
 
-
+stack = "setec-astronomy"
 # this will be used to determine if a stack exists, link with creation function
-if !cfm.stacks['setec-astronomy'].exists?
+if !cfm.stacks[stack].exists? #'setec-astronomy'].exists?
   puts "doesn't exist"
 else
   puts "it exists"
@@ -35,7 +35,7 @@ end
 # this will create a new stack using the existing template
 puts "creating stack"
 template = File.read(templatefile)
-cfm.stacks.create('setec-astronomy', template, :parameters => { 'KeyName' => 'setec-astronomy' })
+#cfm.stacks.create('setec-astronomy', template, :parameters => { 'KeyName' => 'setec-astronomy' })
 setecstack = cfm.stacks['setec-astronomy']
 puts "create signal sent"
 stackstatus = setecstack.status
