@@ -1,9 +1,14 @@
 require 'rubygems'
 require 'aws-sdk'
+require 'open-uri'
 
 tcvolume = "#{ENV['HOME']}/Dropbox/newdropbox"
 cfnpath = "/opt/aws-cloudformatino-tools/"
 credfile = "#{ENV['HOME']}/.ec2/creds"
+templatefile = "#{ENV['HOME']}/src/setec-astronomy/aws/setec-astronomy.template"
+stack = "setec-astronomy"
+keyname = "setec-astronomy"
+webport = "1234"
 
 def readcreds(credfile)
   puts "Reading EC2 credentials file, #{credfile}"
@@ -35,86 +40,128 @@ def mounttc(tcvolume)
   return result
 end
 
-def check4stack()
+def check4stack(cfm, stack)
   puts "Checking for existing stack"
-  result = %x[/opt/aws-cloudformation-tools/bin/cfn-describe-stacks "setec-astronomy --show-long"]
-  if result.include?("not set")
-    puts "Please run usercontrol.sh, environmental variables not set"
-  elsif result.include?("stack")
-    existingstack = result.split(",")[1]
-    puts "Stack found, #{existingstack}"
-    hasstack = true
-  elsif result.include?("Malformed")
-    puts "Network connectivity issue, please ensure you have internet access, exiting"
-    exit
+  if !cfm.stacks[stack].exists?
+    puts "doesn't exist"
   else
-    puts "Stack not found"
-    hasstack = false
+    puts "it exists"
+    hasstack = true
   end
   return hasstack
 end
 
-def killstack()
+def killstack(cfm, stack)
   puts "Would you like to kill your existing stack? (y/n)"
   answer = gets.downcase.strip
   if answer == "y"
-    puts "Deleting #{existingstack}"
-    result = %x[/opt/aws-cloudformation-tools/bin/cfn-delete-stack "#{existingstack}"]
+    puts "Deleting #{stack}"
+    cfm.stacks[stack].delete
+    sleep 3
+    setecstack = cfm.stacks[stack]
+    setecstatus = cfm.stacks[stack].status
+    while setecstatus == "DELETE_IN_PROGRESS" do
+      puts "Deletion still in progress, waiting..."
+      sleep 3 
+      break if !setecstack.exists?
+      sleep 3
+      setecstatus = setecstack.status  
+    end
+    puts "Deleted"
   elsif answer == "n"
     puts "Not deleting, running multiple stacks may cost you money"
   else
     puts "Invalid entry, please use y or n, exiting"
     exit
   end
-  return result
 end
 
-def createstack()
+def createstack(cfm, stack, templatefile, keyname)
   puts "Would you like to create a new stack? (y/n)"
   answer = gets.downcase.strip
   if answer == "y"
-    result = %x[/opt/aws-cloudformation-tools/bin./cfn-create-stacksetec-astronomy "--template-file ~/src/setec-astronomy/aws/setec-astronomy.template --parameters=KeyName=setec-astronomy"]
+    puts "Creating stack"
+    template = File.read(templatefile)
+    cfm.stacks.create(stack, template, :parameters => { 'KeyName' => keyname })
+    setecstack = cfm.stacks[stack]
+    puts "create signal sent"
+    stackstatus = setecstack.status
+    puts "current status is #{stackstatus}"
+    while stackstatus == "CREATE_IN_PROGRESS" do
+      puts "creation still in progress, waiting..."
+      break if stackstatus == "CREATE_COMPLETE"
+      sleep 3
+      stackstatus = setecstack.status
+    end
+    puts "Created"
   elsif answer == "n"
     puts "Exiting"
-    exit
+    #exit
   else
     puts "Invalid entry, please use y or n, exiting"
     exit
   end
-  return result
 end
 
-def verifystack()
-  puts "Checking"
-  result = %x[/opt/aws-cloudformation-tools/bin/cfn-describe-stacks "setec-astronomy --show-long"]
-  if result.include?("not set")
-    puts "Please run usercontrol.sh, environmental variables not set"
-    return "error #{result}"
-  elsif result.include?("stack")
-    existingstack = result.split(",")[1]
-    puts "Stack found, #{existingstack}"
-    hasstack = true
-    return existingstack 
-  elsif result.include?("Malformed")
-    puts "Network connectivity issue, please ensure you have internet access, exiting"
-    return "error #{result}"
-    exit
+def getip(cfm, stack)
+  puts "Checking for ip address"
+  puts "pulling ip address of stack" 
+  setecstack = cfm.stacks[stack]
+  stackip = setecstack.outputs[2].value 
+  while stackip.nil? do 
+    puts "no ip address yet, waiting" 
+    #break if !stackip.nil?
+    sleep 3
+    stackip = setecstack.outputs[2].value
+  end
+  puts "Stack ip address is #{stackip}"
+  return stackip
+end
+
+def check4web(stackip, webport)
+  begin
+    webresult = open("http://#{stackip}:#{webport}/services")
+    if webresult.string.include?("vpn")
+      puts "Web port available"
+      hasweb = true
+      return hasweb
+    else
+      puts "Web port available but didn't have the expected content"
+      hasweb = true
+      return hasweb 
+    end
+  rescue
+    hasweb = false
+    return hasweb 
+  end
+end
+
+def checkservices(stackip, webport)
+  puts "Checking status of existing services"
+  services = [ "vpn", "bind", "squid" ]
+  services.each do |service|
+    begin
+      serviceresult = open("http://#{stackip}:#{webport}/services/#{service}/status")
+      puts "#{service} is #{serviceresult.string}"
+    rescue
+      puts "Something went wrong"
+    end
   end
 end
 
 mounttc(tcvolume)
 awsaccesskey, awssecretkey = readcreds(credfile)
-hasstack = check4stack()
+cfm = AWS::CloudFormation.new( :access_key_id => awsaccesskey, :secret_access_key => awssecretkey)
+hasstack = check4stack(cfm, stack)
 if hasstack
-  killstack()
+  killstack(cfm, stack)
 end
-createstack()
-puts "Waiting 15seconds for stack ip to be populated..."
-sleep 15
-newstackip = verifystack()
-if newstackip.nil?
-elsif newstackip.include?("error")
-  puts "error verifying new instance, #{newstackip}"
-else
-  puts "new stack ip is #{newstackip}"
+createstack(cfm, stack, templatefile, keyname)
+stackip = getip(cfm, stack)
+hasweb = check4web(stackip, webport)
+until hasweb do
+  puts "Web port not available yet, waiting..."
+  sleep 10
+  hasweb = check4web(stackip, webport)
 end
+checkservices(stackip, webport)
