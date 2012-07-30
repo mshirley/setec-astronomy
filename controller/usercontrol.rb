@@ -60,11 +60,11 @@ def killstack(cfm, stack)
     sleep 3
     setecstack = cfm.stacks[stack]
     setecstatus = cfm.stacks[stack].status
+    # this is causing an error
+    # 
     while setecstatus == "DELETE_IN_PROGRESS" do
       puts "Deletion still in progress, waiting..."
       sleep 3 
-      break if !setecstack.exists?
-      sleep 3
       setecstatus = setecstack.status  
     end
     puts "Deleted"
@@ -120,6 +120,7 @@ end
 
 def check4web(stackip, webport)
   begin
+    puts "Checking for web port..."
     webresult = open("http://#{stackip}:#{webport}/services")
     if webresult.string.include?("vpn")
       puts "Web port available"
@@ -157,7 +158,7 @@ if hasstack
   killstack(cfm, stack)
 end
 createstack(cfm, stack, templatefile, keyname)
-stackip = getip(cfm, stack)
+stackip = getip(cfm, stack) 
 hasweb = check4web(stackip, webport)
 until hasweb do
   puts "Web port not available yet, waiting..."
