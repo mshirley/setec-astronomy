@@ -13,8 +13,8 @@ Install the aws ruby gem
 
 Optionally download the command line api tools.
 
-[ec2 api] http://aws.amazon.com/developertools/351/
-[cloudformation api] http://aws.amazon.com/developertools/2555753788650372
+[ec2 api]
+[cloudformation api]
 
 Extract tools to an appropriate directory (/opt/), it's also recommended to add those locations to your path env.
 
