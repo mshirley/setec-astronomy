@@ -10,7 +10,7 @@ Use rvm to install the latest version of ruby or just use 1.8.7 which is fairly 
 ### AWS API Tools
 ### AWS Account with Credentials file
 ### Source
-Please download the latest source at [source] 
+Please download the latest github [source] 
 
 Installation
 ------------
@@ -22,29 +22,28 @@ Create a directory that will contain private information.  This information will
 
 This assumes [source] was downloaded and extracted to /opt/setec-astronomy
 
-  mkdir ~/.ec2
-  chmod 600 ~/.ec2
-  cp /opt/setec-astronomy/aws/privatedir/* ~/.ec2/
+    mkdir ~/.ec2
+    chmod 600 ~/.ec2
+    cp /opt/setec-astronomy/aws/privatedir/* ~/.ec2/
 
 Modify ~/.ec2/sourceme to set environmental variables.
 
 Modify ~/.ec2/creds to set your aws account credentials.  Use the following format for the ~/.ec2/creds file.
 
-AWSAccessKeyId=<insert your access key>
-AWSSecretKey=<insert your secret key>
+    AWSAccessKeyId=<insert your access key>
+    AWSSecretKey=<insert your secret key>
 
 Ensure permissions are set properly on the private directory
   
-  chmod -R 600 ~/.ec2
-
+    chmod -R 600 ~/.ec2
 
 Execution
 ---------
 
 From a command line, assuming [source] was downloaded and extracted to /opt/setec-astronomy
 
-  cd /opt/setec-astronomy/controller/
-  sh controller.sh
+    cd /opt/setec-astronomy/controller/
+    sh controller.sh
 
 This will set some environmental variables based on the ~/.ec2/sourceme file you modified earlier.
 
