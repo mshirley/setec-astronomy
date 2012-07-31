@@ -1,0 +1,19 @@
+# This is the file that should be "sourced" before executing the api or command line api tools. 
+# These environmental variables should be modified to suit your configuration.
+#
+#
+#export EC2_KEYPAIR=setec-astronomy # name only, not the file name
+#export EC2_URL=https://ec2.<your ec2 region>.amazonaws.com
+#
+# these files are generated when creating a new keypair and using iam.
+export EC2_PRIVATE_KEY=<insert location to your aws-pk-*.pem>
+export EC2_CERT=<insert location to your aws-cert-*.pem>
+# java is required for the command line tools
+export JAVA_HOME=/usr/lib/jvm/java-6-openjdk/
+# location for ec2 and cloudformation command line tools
+export EC2_HOME=/opt/ec2-api-tools/
+export AWS_CLOUDFORMATION_HOME=/opt/aws-cloudformation-tools/
+# add api tools to path
+PATH=$PATH:/opt/ec2-api-tools/bin:/opt/aws-cloudformation-tools/bin/
+# set aws credential file which is used for some api access, modify location if you need to
+export AWS_CREDENTIAL_FILE=$HOME/.ec2/creds
