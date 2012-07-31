@@ -1,0 +1,29 @@
+Setec Astronomy
+===============
+
+Requirements
+------------
+### Ruby
+Use rvm to install the latest version of ruby or just use 1.8.7 which is fairly well distributed.  
+
+
+### AWS API Tools
+### AWS Account with Credentials file
+### Source
+Please download the latest source at [source] 
+
+Installation
+------------
+### Source
+Unzip [source] to any directory.  This is the directory that contains all the scripts and configuration files.
+
+### AWS Credentials
+Create a file simliar to the one below and save it to secret location (such as ~./ec2/creds).
+
+AWSAccessKeyId=<insert your access key>
+AWSSecretKey=<insert your secret key>
+
+Execution
+---------
+
+[source]: https://github.com/mshirley/setec-astronomy
