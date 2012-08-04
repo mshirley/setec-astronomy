@@ -6,6 +6,10 @@ Requirements
 ### Ruby
 Use rvm to install the latest version of ruby or just use 1.8.7 which is fairly well adopted.  
 
+### Net-SCP Gem
+
+    gem install net-scp
+
 ### AWS API Tools
 Install the aws ruby gem
 
