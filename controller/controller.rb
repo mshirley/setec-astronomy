@@ -55,6 +55,8 @@ def vpn_service(action)
       vpnstatus = "not running"
     end
     return vpnstatus
+  when "cleanup"
+    `rm /home/ec2-user/ca.crt; rm /home/ec2-user/client1.crt; rm /home/ec2-user/client1.key`
   else
     "bad action"
   end
@@ -173,6 +175,10 @@ get '/services/vpn/data' do
   <a href='/vpn/get-client-key'>client.key</a>
   <p>
   "
+end
+
+get '/vpn/process' do
+  system("cp /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/keys/ca.crt /home/ec2-user/;cp /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/keys/client1.crt /home/ec2-user/;cp /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/keys/client1.key /home/ec2-user/; chown -R ec2-user:ec2-user /home/ec2-user/")
 end
 
 get '/vpn/get-ca' do
