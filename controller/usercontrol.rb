@@ -8,7 +8,7 @@ credfile = "#{ENV['HOME']}/.ec2/creds"
 templatefile = "#{ENV['HOME']}/src/setec-astronomy/aws/setec-astronomy.template"
 stack = "setec-astronomy"
 keyname = "setec-astronomy"
-webport = "1234"
+webport = 1234
 
 def readcreds(credfile)
   puts "Reading EC2 credentials file, #{credfile}"
@@ -59,13 +59,14 @@ def killstack(cfm, stack)
     cfm.stacks[stack].delete
     sleep 3
     setecstack = cfm.stacks[stack]
-    setecstatus = cfm.stacks[stack].status
+    setecstatus = check4stack(cfm, stack) 
     # this is causing an error
     # 
-    while setecstatus == "DELETE_IN_PROGRESS" do
+    #while setecstatus == "DELETE_IN_PROGRESS" do
+    while setecstatus
       puts "Deletion still in progress, waiting..."
       sleep 3 
-      setecstatus = setecstack.status  
+      setecstatus = check4stack(cfm, stack)  
     end
     puts "Deleted"
   elsif answer == "n"
@@ -143,6 +144,14 @@ def checkservices(stackip, webport)
   services.each do |service|
     begin
       serviceresult = open("http://#{stackip}:#{webport}/services/#{service}/status")
+      case serviceresult.string
+      when "not running"
+        puts "service #{service} is not running, starting"
+        runresult = open("http://#{stackip}:#{webport}/services/#{service}/start")
+        puts "result was #{runresult}"
+      when "start"
+        puts "service #{service} is running" 
+      end
       puts "#{service} is #{serviceresult.string}"
     rescue
       puts "Something went wrong"
@@ -150,19 +159,45 @@ def checkservices(stackip, webport)
   end
 end
 
-mounttc(tcvolume)
+def printmenu1()
+puts %{
+*************
+* Main Menu *
+*************
+
+[1] Create Stack
+
+[2] Delete Stack
+
+[3] Get Stack IP
+
+[4] Check Services
+
+[5] Exit
+
+}
+end
+
+#mounttc(tcvolume)
 awsaccesskey, awssecretkey = readcreds(credfile)
 cfm = AWS::CloudFormation.new( :access_key_id => awsaccesskey, :secret_access_key => awssecretkey)
-hasstack = check4stack(cfm, stack)
-if hasstack
-  killstack(cfm, stack)
+menu1in = ""
+until menu1in == "5"
+  printmenu1()
+  print " > "
+  menu1in = gets.strip
 end
-createstack(cfm, stack, templatefile, keyname)
-stackip = getip(cfm, stack) 
-hasweb = check4web(stackip, webport)
-until hasweb do
-  puts "Web port not available yet, waiting..."
-  sleep 10
-  hasweb = check4web(stackip, webport)
-end
-checkservices(stackip, webport)
+
+#hasstack = check4stack(cfm, stack)
+#if hasstack
+#  killstack(cfm, stack)
+#end
+#createstack(cfm, stack, templatefile, keyname)
+#stackip = getip(cfm, stack) 
+#hasweb = check4web(stackip, webport)
+#until hasweb do
+#  puts "Web port not available yet, waiting..."
+#  sleep 10
+#  hasweb = check4web(stackip, webport)
+#end
+#checkservices(stackip, webport)
