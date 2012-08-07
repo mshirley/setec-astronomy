@@ -188,6 +188,8 @@ end
 
 def pullkeys(stackip, localkeys, webport)
   begin
+    puts "processing vpn files"
+    open("http://#{stackip}:#{webport}/services/vpn/process")
     puts "pulling ca.crt"
     Net::SCP::download!(stackip, "ec2-user", "/home/ec2-user/ca.crt", "#{localkeys}/ca.crt")
     puts "pulling client1.crt"
