@@ -11,7 +11,7 @@ then
   ssh-add $SSHKEY
 else
   echo "mounting tcvolume $TCVOLUME"
-  truecrypt $TCVOLUME /media/truecrypt1/
+  truecrypt --mount-options=ro $TCVOLUME /media/truecrypt1/
   ssh-add $SSHKEY
 fi
 ruby usercontrol.rb
