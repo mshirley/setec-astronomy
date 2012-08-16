@@ -43,83 +43,100 @@ def mounttc(tcvolume)
 end
 
 def check4stack(cfm, stack)
-  puts "Checking for existing stack"
-  if !cfm.stacks[stack].exists?
-    puts "doesn't exist"
-    stackstatus = "not running"
-  else
-    puts "it exists"
-    stackstatus = "running" 
+  begin
+    puts "Checking for existing stack"
+    if !cfm.stacks[stack].exists?
+      puts "doesn't exist"
+      stackstatus = "not running"
+    else
+      puts "it exists"
+      stackstatus = "running" 
+    end
+    return stackstatus
+  rescue
+    puts "there was an error checking for a stack"
   end
-  return stackstatus
 end
 
 def killstack(cfm, stack)
-  puts "Would you like to kill your existing stack? (y/n)"
-  answer = gets.downcase.strip
-  if answer == "y"
-    puts "Deleting #{stack}"
-    cfm.stacks[stack].delete
-    sleep 3
-    setecstack = cfm.stacks[stack]
-    setecstatus = check4stack(cfm, stack) 
-    # this is causing an error
-    # 
-    #while setecstatus == "DELETE_IN_PROGRESS" do
-    while setecstatus == "running"
-      puts "Deletion still in progress, waiting..."
-      sleep 3 
-      setecstatus = check4stack(cfm, stack)  
+  begin
+    puts "Would you like to kill your existing stack? (y/n)"
+    answer = gets.downcase.strip
+    if answer == "y"
+      puts "Deleting #{stack}"
+      cfm.stacks[stack].delete
+      sleep 3
+      setecstack = cfm.stacks[stack]
+      setecstatus = check4stack(cfm, stack) 
+      # this is causing an error
+      # 
+      #while setecstatus == "DELETE_IN_PROGRESS" do
+      while setecstatus == "running"
+        puts "Deletion still in progress, waiting..."
+        sleep 3 
+        setecstatus = check4stack(cfm, stack)  
+      end
+      puts "Deleted"
+    elsif answer == "n"
+      puts "Not deleting, running multiple stacks may cost you money"
+    else
+      puts "Invalid entry, please use y or n, exiting"
+      exit
     end
-    puts "Deleted"
-  elsif answer == "n"
-    puts "Not deleting, running multiple stacks may cost you money"
-  else
-    puts "Invalid entry, please use y or n, exiting"
-    exit
+  rescue
+    puts "there was an error killing the stack"
   end
 end
 
 def createstack(cfm, stack, templatefile, keyname)
-  puts "Would you like to create a new stack? (y/n)"
-  answer = gets.downcase.strip
-  if answer == "y"
-    puts "Creating stack"
-    template = File.read(templatefile)
-    cfm.stacks.create(stack, template, :parameters => { 'KeyName' => keyname })
-    setecstack = cfm.stacks[stack]
-    puts "create signal sent"
-    stackstatus = setecstack.status
-    puts "current status is #{stackstatus}"
-    while stackstatus == "CREATE_IN_PROGRESS" do
-      puts "creation still in progress, waiting..."
-      break if stackstatus == "CREATE_COMPLETE"
-      sleep 3
+  begin
+    puts "Would you like to create a new stack? (y/n)"
+    answer = gets.downcase.strip
+    if answer == "y"
+      puts "Creating stack"
+      template = File.read(templatefile)
+      cfm.stacks.create(stack, template, :parameters => { 'KeyName' => keyname })
+      setecstack = cfm.stacks[stack]
+      puts "create signal sent"
       stackstatus = setecstack.status
+      puts "current status is #{stackstatus}"
+      while stackstatus == "CREATE_IN_PROGRESS" do
+        puts "creation still in progress, waiting..."
+        break if stackstatus == "CREATE_COMPLETE"
+        sleep 3
+        stackstatus = setecstack.status
+      end
+      puts "Created"
+    elsif answer == "n"
+      puts "Exiting"
+      #exit
+    else
+      puts "Invalid entry, please use y or n, exiting"
+      exit
     end
-    puts "Created"
-  elsif answer == "n"
-    puts "Exiting"
-    #exit
-  else
-    puts "Invalid entry, please use y or n, exiting"
-    exit
+  rescue
+    puts "there was an error trying to create stack"
   end
 end
 
 def getip(cfm, stack)
-  puts "Checking for ip address"
-  puts "pulling ip address of stack" 
-  setecstack = cfm.stacks[stack]
-  stackip = setecstack.outputs[2].value 
-  while stackip.nil? do 
-    puts "no ip address yet, waiting" 
-    #break if !stackip.nil?
-    sleep 3
-    stackip = setecstack.outputs[2].value
+  begin  
+    puts "Checking for ip address"
+    puts "pulling ip address of stack" 
+    setecstack = cfm.stacks[stack]
+    stackip = setecstack.outputs[2].value 
+    while stackip.nil? do 
+      puts "no ip address yet, waiting" 
+      #break if !stackip.nil?
+      sleep 3
+      stackip = setecstack.outputs[2].value
+    end
+    puts "Stack ip address is #{stackip}"
+    return stackip
+  rescue
+    puts "there was an error getting the ip"
+    return "notset"
   end
-  puts "Stack ip address is #{stackip}"
-  return stackip
 end
 
 def check4web(stackip, webport)
@@ -157,7 +174,7 @@ def checkservices(stackip, webport)
       end
       puts "#{service} is #{serviceresult.string}"
     rescue
-      puts "Something went wrong"
+      puts "Something went wrong checking services"
     end
   end
 end
@@ -181,7 +198,9 @@ Stack ip: #{stackip}
 
 [5] Copy vpn files
 
-[6] Exit
+[6] Create /etc/hosts file
+
+[7] Exit
 
 }
 end
@@ -219,7 +238,7 @@ else
 end
 
 menu1in = ""
-until menu1in == "6"
+until menu1in == "7"
   printmenu1(stackstatus, stackip)
   print " > "
   menu1in = gets.strip
@@ -230,11 +249,13 @@ until menu1in == "6"
     end      
     puts "execute createstack()"
     createstack(cfm, stack, templatefile, keyname)
-    stackstatus = "running"
+    stackstatus = check4stack(cfm, stack)
+    stackip = getip(cfm, stack)
   when "2"
     stackstatus = check4stack(cfm, stack)
     if stackstatus == "running"
       killstack(cfm, stack)
+      stackstatus = check4stack(cfm, stack) 
     else 
       puts "no stack to delete"
     end
@@ -255,19 +276,15 @@ until menu1in == "6"
     else
       pullkeys(stackip, localkeys, webport)
     end
+  when "6"
+    if stackip == "notset"
+       puts "no stack ip set, start a stack and pull the ip"
+    else
+       system("sudo sh -c 'cp /etc/hosts /tmp/hosts-backup'")
+       system("sed '/setec-astronomy/c\\' /etc/hosts > /tmp/newhosts")
+       system("echo \"10.8.0.1 setec-astronomy-int\" >> /tmp/newhosts")
+       system("sudo sh -c 'echo \"#{stackip} setec-astronomy\" >> /tmp/newhosts'")
+       system("sudo sh -c 'mv /tmp/newhosts /etc/hosts'")
+    end
   end
 end
-
-#stackstatus = check4stack(cfm, stack)
-#if stackstatus
-#  killstack(cfm, stack)
-#end
-#createstack(cfm, stack, templatefile, keyname)
-#stackip = getip(cfm, stack) 
-#hasweb = check4web(stackip, webport)
-#until hasweb do
-#  puts "Web port not available yet, waiting..."
-#  sleep 10
-#  hasweb = check4web(stackip, webport)
-#end
-#checkservices(stackip, webport)
