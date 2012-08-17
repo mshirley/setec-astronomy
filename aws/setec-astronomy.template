@@ -51,6 +51,8 @@
       "gem install sinatra","\n",
       "# pull down source tree, extract, and copy files to and fro","\n",
       "wget https://github.com/mshirley/setec-astronomy/zipball/master -O /tmp/setec-astronomy.zip","\n",
+      "CODE=$?","\n",
+      "if [ $CODE -ne 0 ]; then echo 'failed to download source, falling back to to s3'; wget https://s3bucketurl-changeme; fi","\n",
       "unzip /tmp/setec-astronomy.zip -d /tmp","\n",
       "mv /tmp/mshirley-setec-* /tmp/setec-astronomy","\n",
       "cp /tmp/setec-astronomy/conf/named/named.* /etc/","\n",
