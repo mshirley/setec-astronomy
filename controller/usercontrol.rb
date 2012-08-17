@@ -200,7 +200,11 @@ Stack ip: #{stackip}
 
 [6] Create /etc/hosts file
 
-[7] Exit
+[7] Enable proxy (ubuntu only)
+
+[8] Disable proxy (ubuntu only)
+
+[9] Exit
 
 }
 end
@@ -238,7 +242,7 @@ else
 end
 
 menu1in = ""
-until menu1in == "7"
+until menu1in == "9"
   printmenu1(stackstatus, stackip)
   print " > "
   menu1in = gets.strip
@@ -286,5 +290,20 @@ until menu1in == "7"
        system("sudo sh -c 'echo \"#{stackip} setec-astronomy\" >> /tmp/newhosts'")
        system("sudo sh -c 'mv /tmp/newhosts /etc/hosts'")
     end
+  when "7"
+    system("gsettings set org.gnome.system.proxy.socks host 'setec-astronomy-int'")
+    system("gsettings set org.gnome.system.proxy.socks port 3128")
+    system("gsettings set org.gnome.system.proxy.ftp host 'setec-astronomy-int'")
+    system("gsettings set org.gnome.system.proxy.ftp port 3128")
+    system("gsettings set org.gnome.system.proxy.http host 'setec-astronomy-int'")
+    system("gsettings set org.gnome.system.proxy.http port 3128")
+    system("gsettings set org.gnome.system.proxy.https host 'setec-astronomy-int'")
+    system("gsettings set org.gnome.system.proxy.https port 3128")
+    system("gsettings set org.gnome.system.proxy mode 'manual'")
+  when "8"
+    system("gsettings set org.gnome.system.proxy mode 'none'")
+  # when 9, 10
+  # nmcli con up id setec-astronomy-vpn
+  # nmcli con down id setec-astronomy-vpn
   end
 end
