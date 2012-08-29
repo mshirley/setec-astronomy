@@ -48,7 +48,7 @@
       "#!/bin/bash -ex","\n",
       "# install packages","\n",
       "yum -y install gcc-c++ make puppet links squid bind-chroot openvpn rubygems","\n",
-      "gem install sinatra","\n",
+      "gem install sinatra --no-rdoc --no-ri","\n",
       "# pull down source tree, extract, and copy files to and fro","\n",
       "wget https://github.com/mshirley/setec-astronomy/zipball/master -O /tmp/setec-astronomy.zip","\n",
       "CODE=$?","\n",
