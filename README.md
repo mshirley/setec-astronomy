@@ -4,7 +4,7 @@ Setec Astronomy
 Requirements
 ------------
 ### Ruby
-  Use rvm to install the latest version of ruby or just use 1.8.7 which is fairly well adopted.  
+Use rvm to install the latest version of ruby or just use 1.8.7 which is fairly well adopted.  
 
 ### Net-SCP Gem
 
