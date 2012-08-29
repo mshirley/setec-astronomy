@@ -158,6 +158,39 @@ def check4web(stackip, webport)
   end
 end
 
+def checkservicesssh(stackip)
+  puts "Starting services"
+  #begin
+    Net::SSH.start( stackip, 'ec2-user' ) do |session|
+      session.open_channel do |channel|
+        channel.request_pty
+        channel.exec "sudo sh -c '/etc/init.d/openvpn start; /etc/init.d/named start; /etc/init.d/squid start'"
+        channel.on_data do |ch, data|
+          puts "got stdout: #{data}"
+        end
+        #services = [ "openvpn", "named", "squid" ]
+        #services.each do |service|
+        #  puts service
+          #result = channel.exec "sudo sh -c '/etc/init.d/#{service} status'"
+          #puts "result is #{result}"
+          #case result
+          #when "not running"
+          #  puts "service #{service} is not running, starting"
+        #  channel.exec "sudo sh -c '/etc/init.d/#{service} start'"
+          #when "running"
+          #  puts "service #{service} is running"
+          #else
+          #  puts "service message not recognized"
+          #end
+        #end
+      end
+    end
+        #channel.exec "ps aux | grep openvpn"
+  #rescue
+  #  puts "an error occured checking services"
+  #end
+end
+
 def checkservices(stackip, webport)
   puts "Checking status of existing services"
   services = [ "vpn", "bind", "squid" ]
@@ -200,27 +233,44 @@ Stack ip: #{stackip}
 
 [6] Create /etc/hosts file
 
-[7] Enable proxy (ubuntu only)
+[7] Enable vpn
 
-[8] Disable proxy (ubuntu only)
+[8] Disable vpn
 
-[9] Exit
+[9] Enable proxy (ubuntu only)
+
+[10] Disable proxy (ubuntu only)
+
+[11] Exit
 
 }
 end
 
 def pullkeys(stackip, localkeys, webport)
   begin
-    puts "processing vpn files"
-    open("http://#{stackip}:#{webport}/services/vpn/process")
-    puts "pulling ca.crt"
-    Net::SCP::download!(stackip, "ec2-user", "/home/ec2-user/ca.crt", "#{localkeys}/ca.crt")
-    puts "pulling client1.crt"
-    Net::SCP::download!(stackip, "ec2-user", "/home/ec2-user/client1.crt", "#{localkeys}/client1.crt")
-    puts "pulling client1.key"
-    Net::SCP::download!(stackip, "ec2-user", "/home/ec2-user/client1.key", "#{localkeys}/client1.key")
-    open("http://#{stackip}:#{webport}/services/vpn/cleanup")
-    puts "remote files cleaned"
+    puts "processing remote certificates"
+    #open("http://#{stackip}:#{webport}/services/vpn/process")
+    Net::SSH.start( stackip, 'ec2-user' ) do |session|
+      session.open_channel do |channel|
+        channel.request_pty
+        channel.exec "sudo sh -c 'cp /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/keys/ca.crt /home/ec2-user/;cp /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/keys/client1.crt /home/ec2-user/;cp /tmp/setec-astronomy/conf/openvpn/easy-rsa-new/keys/client1.key /home/ec2-user/; chown -R ec2-user:ec2-user /home/ec2-user/'"
+      end
+    end
+    puts "pulling vpn certificates"
+    Net::SCP.start(stackip, 'ec2-user') do |scp|
+      # run multiple downloads in parallel
+      d1 = scp.download("/home/ec2-user/ca.crt", "#{localkeys}/ca.crt")
+      d2 = scp.download("/home/ec2-user/client1.crt", "#{localkeys}/client1.crt")
+      d3 = scp.download("/home/ec2-user/client1.key", "#{localkeys}/client1.key")
+      [d1, d2, d3].each { |d| d.wait }
+    end  
+    puts "cleaning up remote certificates"
+    Net::SSH.start( stackip, 'ec2-user' ) do |session|
+      session.open_channel do |channel|
+        channel.request_pty
+        channel.exec "sudo sh -c 'rm /home/ec2-user/ca.crt; rm /home/ec2-user/client1.crt; rm /home/ec2-user/client1.key'"
+      end
+    end
   rescue Net::SSH::AuthenticationFailed
     puts "authentication error, ensure you're setting SSHKEYS and that ssh-add is working.  if you have to just manually ssh-add your aws pem before running usercontrol.sh"
   rescue
@@ -242,7 +292,7 @@ else
 end
 
 menu1in = ""
-until menu1in == "9"
+until menu1in == "11"
   printmenu1(stackstatus, stackip)
   print " > "
   menu1in = gets.strip
@@ -267,13 +317,14 @@ until menu1in == "9"
   when "3"
     stackip = getip(cfm, stack)    
   when "4"
-    hasweb = check4web(stackip, webport)
-    until hasweb do
-      puts "Web port not available yet, waiting..."
-      sleep 10
-      hasweb = check4web(stackip, webport)
-    end
-    checkservices(stackip, webport)  
+    #hasweb = check4web(stackip, webport)
+    #until hasweb do
+    #  puts "Web port not available yet, waiting..."
+    #  sleep 10
+    #  hasweb = check4web(stackip, webport)
+    #end
+    #checkservices(stackip, webport)  
+    checkservicesssh(stackip)
   when "5"
     if stackip == "notset"
       puts "no stack ip set, start a stack"
@@ -291,6 +342,10 @@ until menu1in == "9"
        system("sudo sh -c 'mv /tmp/newhosts /etc/hosts'")
     end
   when "7"
+    system("nmcli con up id setec-astronomy-vpn")
+  when "8"
+    system("nmcli con down id setec-astronomy-vpn")
+  when "9"
     system("gsettings set org.gnome.system.proxy.socks host 'setec-astronomy-int'")
     system("gsettings set org.gnome.system.proxy.socks port 3128")
     system("gsettings set org.gnome.system.proxy.ftp host 'setec-astronomy-int'")
@@ -300,7 +355,7 @@ until menu1in == "9"
     system("gsettings set org.gnome.system.proxy.https host 'setec-astronomy-int'")
     system("gsettings set org.gnome.system.proxy.https port 3128")
     system("gsettings set org.gnome.system.proxy mode 'manual'")
-  when "8"
+  when "10"
     system("gsettings set org.gnome.system.proxy mode 'none'")
   # when 9, 10
   # nmcli con up id setec-astronomy-vpn

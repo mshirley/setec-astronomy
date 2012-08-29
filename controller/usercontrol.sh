@@ -14,4 +14,13 @@ else
   truecrypt --mount-options=ro $TCVOLUME /media/truecrypt1/
   ssh-add $SSHKEY
 fi
-ruby usercontrol.rb
+
+if [ "$1" = "-a" ]
+then
+  echo "Executing usercontrol.rb with auto option"
+  ruby usercontrol.rb auto
+else
+  echo "Executing usercontrol.rb without auto option (use -a)"
+  ruby usercontrol.rb
+fi
+
