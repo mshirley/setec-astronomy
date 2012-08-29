@@ -4,7 +4,7 @@ require 'open-uri'
 require 'net/scp'
 
 tcvolume = "#{ENV['HOME']}/Dropbox/newdropbox"
-cfnpath = "/opt/aws-cloudformatino-tools/"
+cfnpath = "/opt/aws-cloudformation-tools/"
 credfile = "#{ENV['HOME']}/.ec2/creds"
 templatefile = "#{ENV['HOME']}/src/setec-astronomy/aws/setec-astronomy.template"
 stack = "setec-astronomy"
